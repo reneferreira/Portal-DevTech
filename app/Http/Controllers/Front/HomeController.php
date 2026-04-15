@@ -1,0 +1,167 @@
+<?php
+// app/Http/Controllers/Front/HomeController.php
+
+namespace App\Http\Controllers\Front;
+
+use App\Http\Controllers\Controller;
+use App\Models\Post;
+use App\Models\Categoria;
+use App\Models\Video;
+use Illuminate\Http\Request;
+
+class HomeController extends Controller
+{
+    public function index()
+    {
+        // Categorias com contagem de posts
+        $categorias = Categoria::withCount('posts')->get();
+        
+        // Posts em destaque (carrossel)
+        $destaques = Post::with(['categoria', 'user'])
+                        ->publicado()
+                        ->destaque()
+                        ->latest('publicado_em')
+                        ->take(6)
+                        ->get();
+        
+        // Últimos posts (página inicial)
+        $posts = Post::with(['categoria', 'user'])
+                    ->publicado()
+                    ->latest('publicado_em')
+                    ->paginate(10);
+        
+        // Mais lidas da semana
+        $maisLidas = Post::publicado()
+                        ->where('publicado_em', '>=', now()->subDays(7))
+                        ->orderBy('views', 'desc')
+                        ->take(5)
+                        ->get();
+        
+        // VÍDEOS - Correção principal
+        $videos = Video::publicado() // Usando o scope publicado
+                      ->latest('publicado_em')
+                      ->take(8)
+                      ->get();
+        
+        // Se não houver vídeos no banco, usar exemplos
+        if ($videos->isEmpty()) {
+            $videos = collect([
+                (object) [
+                    'titulo' => 'Como começar em Laravel',
+                    'youtube_id' => 'dQw4w9WgXcQ',
+                    'thumbnail' => null,
+                    'views' => 1200,
+                    'embed_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+                ],
+                (object) [
+                    'titulo' => 'React vs Vue 2024',
+                    'youtube_id' => 'dQw4w9WgXcQ',
+                    'thumbnail' => null,
+                    'views' => 890,
+                    'embed_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+                ],
+                (object) [
+                    'titulo' => 'Docker para iniciantes',
+                    'youtube_id' => 'dQw4w9WgXcQ',
+                    'thumbnail' => null,
+                    'views' => 2100,
+                    'embed_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+                ],
+                (object) [
+                    'titulo' => 'APIs RESTful com Laravel',
+                    'youtube_id' => 'dQw4w9WgXcQ',
+                    'thumbnail' => null,
+                    'views' => 3450,
+                    'embed_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+                ],
+                (object) [
+                    'titulo' => 'JavaScript Moderno',
+                    'youtube_id' => 'dQw4w9WgXcQ',
+                    'thumbnail' => null,
+                    'views' => 980,
+                    'embed_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+                ],
+                (object) [
+                    'titulo' => 'Banco de Dados SQL',
+                    'youtube_id' => 'dQw4w9WgXcQ',
+                    'thumbnail' => null,
+                    'views' => 1560,
+                    'embed_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+                ],
+                (object) [
+                    'titulo' => 'Git e GitHub',
+                    'youtube_id' => 'dQw4w9WgXcQ',
+                    'thumbnail' => null,
+                    'views' => 2870,
+                    'embed_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+                ],
+                (object) [
+                    'titulo' => 'Tailwind CSS',
+                    'youtube_id' => 'dQw4w9WgXcQ',
+                    'thumbnail' => null,
+                    'views' => 430,
+                    'embed_url' => 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+                ],
+            ]);
+        }
+        
+        // ARTIGOS - Correção
+        // Verificar se existe o campo 'tipo' na tabela posts
+        $hasTipoColumn = \Illuminate\Support\Facades\Schema::hasColumn('posts', 'tipo');
+        
+        if ($hasTipoColumn) {
+            $artigos = Post::with(['categoria', 'user'])
+                          ->publicado()
+                          ->where('tipo', 'artigo')
+                          ->latest('publicado_em')
+                          ->take(8)
+                          ->get();
+        } else {
+            // Fallback: usar posts de uma categoria específica chamada "Artigos"
+            $artigos = Post::with(['categoria', 'user'])
+                          ->publicado()
+                          ->whereHas('categoria', function($query) {
+                              $query->where('nome', 'like', '%Artigo%')
+                                    ->orWhere('nome', 'like', '%Blog%');
+                          })
+                          ->latest('publicado_em')
+                          ->take(8)
+                          ->get();
+        }
+        
+        // Se ainda não tiver artigos, usar os últimos posts
+        if ($artigos->isEmpty()) {
+            $artigos = Post::with(['categoria', 'user'])
+                          ->publicado()
+                          ->latest('publicado_em')
+                          ->take(8)
+                          ->get();
+        }
+        
+        return view('front.home', compact(
+            'categorias', 
+            'destaques', 
+            'posts', 
+            'maisLidas', 
+            'videos', 
+            'artigos'
+        ));
+    }
+
+    public function busca(Request $request)
+    {
+        $query = $request->get('q');
+        
+        $posts = Post::with(['categoria', 'user'])
+                    ->publicado()
+                    ->where(function($q) use ($query) {
+                        $q->where('titulo', 'LIKE', "%{$query}%")
+                          ->orWhere('conteudo', 'LIKE', "%{$query}%")
+                          ->orWhere('resumo', 'LIKE', "%{$query}%");
+                    })
+                    ->latest('publicado_em')
+                    ->paginate(10);
+
+        return view('front.busca', compact('posts', 'query'));
+    }
+}
