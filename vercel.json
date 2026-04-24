@@ -1,22 +1,16 @@
 {
   "version": 2,
   "buildCommand": "echo 'Build skipped for PHP project'",
-  "outputDirectory": "public",
+  "outputDirectory": null,
   "functions": {
     "api/index.php": {
       "runtime": "vercel-php@0.7.2"
     }
   },
-  "rewrites": [
+  "routes": [
     {
-      "source": "/(.*)",
-      "destination": "/api/index.php"
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/api/index.php"
+      "src": "^/(.*)$",
+      "dest": "/api/index.php"
     }
   ]
 }
