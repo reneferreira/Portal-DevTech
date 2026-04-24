@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "echo 'Build skipped for PHP project'",
+  "buildCommand": "npm ci && npm run build",
   "outputDirectory": "public",
   "functions": {
     "api/index.php": {
