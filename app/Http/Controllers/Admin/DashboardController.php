@@ -8,6 +8,7 @@ use App\Models\Tag;
 use App\Models\Comment;
 use App\Models\Contato;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -31,10 +32,12 @@ class DashboardController extends Controller
                               ->take(5)
                               ->get();
         
-        $postsPorMes = Post::selectRaw('MONTH(created_at) as mes, COUNT(*) as total')
+        $mesExpression = DB::raw('EXTRACT(MONTH FROM created_at)');
+
+        $postsPorMes = Post::selectRaw('EXTRACT(MONTH FROM created_at) as mes, COUNT(*) as total')
                           ->whereYear('created_at', date('Y'))
-                          ->groupBy('mes')
-                          ->orderBy('mes')
+                          ->groupBy($mesExpression)
+                          ->orderBy($mesExpression)
                           ->get();
         
         return view('admin.dashboard', compact(
