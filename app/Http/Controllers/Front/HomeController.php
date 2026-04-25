@@ -150,7 +150,13 @@ class HomeController extends Controller
 
     public function busca(Request $request)
     {
-        $query = $request->get('q');
+        $query = trim((string) $request->get('q', ''));
+
+        if ($query === '') {
+            return redirect()
+                ->route('home')
+                ->with('warning', 'Digite um termo para buscar notícias.');
+        }
         
         $posts = Post::with(['categoria', 'user'])
                     ->publicado()
@@ -160,7 +166,8 @@ class HomeController extends Controller
                           ->orWhere('resumo', 'LIKE', "%{$query}%");
                     })
                     ->latest('publicado_em')
-                    ->paginate(10);
+                    ->paginate(10)
+                    ->withQueryString();
 
         return view('front.busca', compact('posts', 'query'));
     }
