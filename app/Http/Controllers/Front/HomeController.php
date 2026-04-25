@@ -157,18 +157,45 @@ class HomeController extends Controller
                 ->route('home')
                 ->with('warning', 'Digite um termo para buscar notícias.');
         }
+
+        $searchTerms = collect(preg_split('/\s+/', $query))
+            ->filter()
+            ->unique()
+            ->values();
         
-        $posts = Post::with(['categoria', 'user'])
+        $posts = Post::with(['categoria', 'user', 'tags'])
                     ->publicado()
-                    ->where(function($q) use ($query) {
+                    ->where(function($q) use ($query, $searchTerms) {
                         $q->where('titulo', 'LIKE', "%{$query}%")
                           ->orWhere('conteudo', 'LIKE', "%{$query}%")
-                          ->orWhere('resumo', 'LIKE', "%{$query}%");
+                          ->orWhere('resumo', 'LIKE', "%{$query}%")
+                          ->orWhereHas('categoria', function ($categoriaQuery) use ($query) {
+                              $categoriaQuery->where('nome', 'LIKE', "%{$query}%")
+                                  ->orWhere('descricao', 'LIKE', "%{$query}%");
+                          })
+                          ->orWhereHas('tags', function ($tagQuery) use ($query) {
+                              $tagQuery->where('nome', 'LIKE', "%{$query}%");
+                          });
+
+                        $searchTerms->each(function ($term) use ($q) {
+                            $q->orWhere(function ($termQuery) use ($term) {
+                                $termQuery->where('titulo', 'LIKE', "%{$term}%")
+                                    ->orWhere('conteudo', 'LIKE', "%{$term}%")
+                                    ->orWhere('resumo', 'LIKE', "%{$term}%")
+                                    ->orWhereHas('categoria', function ($categoriaQuery) use ($term) {
+                                        $categoriaQuery->where('nome', 'LIKE', "%{$term}%")
+                                            ->orWhere('descricao', 'LIKE', "%{$term}%");
+                                    })
+                                    ->orWhereHas('tags', function ($tagQuery) use ($term) {
+                                        $tagQuery->where('nome', 'LIKE', "%{$term}%");
+                                    });
+                            });
+                        });
                     })
                     ->latest('publicado_em')
                     ->paginate(10)
                     ->withQueryString();
 
-        return view('front.busca', compact('posts', 'query'));
+        return view('front.busca', compact('posts', 'query', 'searchTerms'));
     }
 }

@@ -2,9 +2,41 @@
 
 @section('title', 'Busca por "' . $query . '" - Portal DevTech')
 
+@push('styles')
+<style>
+    mark.search-highlight {
+        background: rgba(13, 110, 253, 0.16);
+        color: inherit;
+        padding: 0.1rem 0.35rem;
+        border-radius: 0.4rem;
+    }
+</style>
+@endpush
+
 @section('content')
 <section class="py-5">
     <div class="container">
+        @php
+            $highlight = function (?string $text) use ($searchTerms) {
+                if (! $text) {
+                    return new \Illuminate\Support\HtmlString('');
+                }
+
+                $escapedText = e($text);
+
+                foreach ($searchTerms as $term) {
+                    $escapedTerm = preg_quote(e($term), '/');
+                    $escapedText = preg_replace(
+                        "/($escapedTerm)/iu",
+                        '<mark class="search-highlight">$1</mark>',
+                        $escapedText
+                    );
+                }
+
+                return new \Illuminate\Support\HtmlString($escapedText);
+            };
+        @endphp
+
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
@@ -16,6 +48,13 @@
                         <p class="text-muted mb-0">
                             {{ $posts->total() }} {{ \Illuminate\Support\Str::plural('notícia', $posts->total()) }} encontrada(s).
                         </p>
+                        @if($searchTerms->isNotEmpty())
+                            <div class="d-flex flex-wrap gap-2 mt-3">
+                                @foreach($searchTerms as $term)
+                                    <span class="badge rounded-pill text-bg-light border">{{ $term }}</span>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
 
                     <form class="d-flex" action="{{ route('busca') }}" method="GET">
@@ -59,7 +98,7 @@
                                             <div class="card-body p-4">
                                                 <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
                                                     <a href="{{ route('categoria', $post->categoria->slug) }}" class="category-badge">
-                                                        {{ $post->categoria->nome }}
+                                                        {!! $highlight($post->categoria->nome) !!}
                                                     </a>
                                                     <small class="text-muted">
                                                         <i class="bi bi-calendar3"></i>
@@ -73,12 +112,22 @@
 
                                                 <h2 class="h4 mb-3">
                                                     <a href="{{ route('post', $post->slug) }}" class="text-dark text-decoration-none">
-                                                        {{ $post->titulo }}
+                                                        {!! $highlight($post->titulo) !!}
                                                     </a>
                                                 </h2>
 
                                                 @if($post->resumo)
-                                                    <p class="text-muted mb-3">{{ $post->resumo }}</p>
+                                                    <p class="text-muted mb-3">{!! $highlight($post->resumo) !!}</p>
+                                                @endif
+
+                                                @if($post->tags->isNotEmpty())
+                                                    <div class="d-flex flex-wrap gap-2 mb-3">
+                                                        @foreach($post->tags as $tag)
+                                                            <span class="badge rounded-pill text-bg-light">
+                                                                # {!! $highlight($tag->nome) !!}
+                                                            </span>
+                                                        @endforeach
+                                                    </div>
                                                 @endif
 
                                                 <a href="{{ route('post', $post->slug) }}" class="btn btn-outline-primary rounded-pill">
