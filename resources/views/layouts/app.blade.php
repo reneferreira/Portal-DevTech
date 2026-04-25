@@ -5,14 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     <title>@yield('title', 'Portal DevTech - Portal de Tecnologia')</title>
-    
-    <!-- Bootstrap 5 CSS -->
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -34,11 +33,11 @@
             border: none;
             border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
         }
         .post-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
         .post-card img {
             height: 200px;
@@ -81,11 +80,65 @@
             justify-content: center;
             font-weight: bold;
         }
+        .search-form {
+            position: relative;
+            width: min(100%, 360px);
+        }
+        .search-input {
+            padding-right: 3rem;
+        }
+        .search-submit {
+            min-width: 46px;
+        }
+        .search-suggestions {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            left: 0;
+            right: 0;
+            z-index: 1080;
+            display: none;
+            padding: 0.5rem;
+            background: #fff;
+            border: 1px solid rgba(13, 110, 253, 0.12);
+            border-radius: 1rem;
+            box-shadow: 0 16px 40px rgba(13, 25, 48, 0.14);
+        }
+        .search-suggestions.show {
+            display: block;
+        }
+        .search-suggestion-item {
+            display: block;
+            padding: 0.8rem 0.9rem;
+            border-radius: 0.85rem;
+            color: #212529;
+            text-decoration: none;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .search-suggestion-item:hover,
+        .search-suggestion-item.active {
+            background: #f3f7ff;
+            color: #0d6efd;
+            transform: translateY(-1px);
+        }
+        .search-suggestion-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.35rem;
+        }
+        .search-suggestion-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.55rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            background: #eef2f7;
+            color: #52606d;
+        }
     </style>
     @stack('styles')
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div class="container">
             <a class="navbar-brand" href="{{ route('home') }}">
@@ -112,7 +165,7 @@
                             @foreach($categorias as $categoria)
                                 <li>
                                     <a class="dropdown-item" href="{{ route('categoria', $categoria->slug) }}">
-                                        <i class="bi bi-{{ $categoria->icone ?? 'tag' }}"></i> 
+                                        <i class="bi bi-{{ $categoria->icone ?? 'tag' }}"></i>
                                         {{ $categoria->nome }}
                                         <span class="badge bg-secondary rounded-pill float-end">{{ $categoria->posts_count }}</span>
                                     </a>
@@ -130,15 +183,15 @@
                         <a class="nav-link" href="{{ route('contato') }}"><i class="bi bi-envelope"></i> Contato</a>
                     </li>
                 </ul>
-                
-                <form class="d-flex me-3" action="{{ route('busca') }}" method="GET">
-                    <input class="form-control me-2 rounded-pill" type="search" name="q" placeholder="Buscar notícias...">
-                    <button class="btn btn-outline-primary rounded-pill" type="submit">
+
+                <form class="d-flex me-3 search-form" action="{{ route('busca') }}" method="GET" autocomplete="off" data-search-form>
+                    <input class="form-control me-2 rounded-pill search-input" type="search" name="q" placeholder="Buscar notícias..." data-search-input aria-label="Buscar notícias">
+                    <button class="btn btn-outline-primary rounded-pill search-submit" type="submit">
                         <i class="bi bi-search"></i>
                     </button>
+                    <div class="search-suggestions" data-search-suggestions></div>
                 </form>
-                
-                <!-- Botões de Login/Admin -->
+
                 @auth
                     <div class="dropdown user-dropdown">
                         <button class="btn btn-link text-decoration-none dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -154,7 +207,7 @@
                                 </span>
                             </li>
                             <li><hr class="dropdown-divider"></li>
-                            
+
                             @if(auth()->user()->is_admin)
                                 <li>
                                     <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
@@ -168,7 +221,7 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                             @endif
-                            
+
                             <li>
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
@@ -193,12 +246,10 @@
         </div>
     </nav>
 
-    <!-- Conteúdo Principal -->
     <main>
         @yield('content')
     </main>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="row">
@@ -249,6 +300,153 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (() => {
+            const form = document.querySelector('[data-search-form]');
+
+            if (!form) {
+                return;
+            }
+
+            const input = form.querySelector('[data-search-input]');
+            const suggestions = form.querySelector('[data-search-suggestions]');
+            const endpoint = @json(route('busca.sugestoes'));
+            let controller = null;
+            let activeIndex = -1;
+            let debounceTimer = null;
+
+            const closeSuggestions = () => {
+                suggestions.classList.remove('show');
+                suggestions.innerHTML = '';
+                activeIndex = -1;
+            };
+
+            const escapeHtml = (value) => value
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+
+            const updateActiveItem = () => {
+                const items = suggestions.querySelectorAll('[data-suggestion-item]');
+
+                items.forEach((item, index) => {
+                    item.classList.toggle('active', index === activeIndex);
+                });
+            };
+
+            const renderSuggestions = (items) => {
+                if (!items.length) {
+                    closeSuggestions();
+                    return;
+                }
+
+                suggestions.innerHTML = items.map((item, index) => {
+                    const category = item.category
+                        ? `<span class="search-suggestion-pill">${escapeHtml(item.category)}</span>`
+                        : '';
+
+                    const tags = (item.tags || [])
+                        .map((tag) => `<span class="search-suggestion-pill">#${escapeHtml(tag)}</span>`)
+                        .join('');
+
+                    return `
+                        <a href="${item.url}" class="search-suggestion-item" data-suggestion-item data-index="${index}">
+                            <strong>${escapeHtml(item.title)}</strong>
+                            <div class="search-suggestion-meta">
+                                ${category}
+                                ${tags}
+                            </div>
+                        </a>
+                    `;
+                }).join('');
+
+                suggestions.classList.add('show');
+                activeIndex = -1;
+            };
+
+            const fetchSuggestions = async (value) => {
+                if (value.trim().length < 2) {
+                    closeSuggestions();
+                    return;
+                }
+
+                if (controller) {
+                    controller.abort();
+                }
+
+                controller = new AbortController();
+
+                try {
+                    const response = await fetch(`${endpoint}?q=${encodeURIComponent(value)}`, {
+                        signal: controller.signal,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        closeSuggestions();
+                        return;
+                    }
+
+                    renderSuggestions(await response.json());
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        closeSuggestions();
+                    }
+                }
+            };
+
+            input.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => fetchSuggestions(input.value), 180);
+            });
+
+            input.addEventListener('focus', () => {
+                if (suggestions.innerHTML.trim() !== '') {
+                    suggestions.classList.add('show');
+                }
+            });
+
+            input.addEventListener('keydown', (event) => {
+                const items = suggestions.querySelectorAll('[data-suggestion-item]');
+
+                if (!items.length) {
+                    return;
+                }
+
+                if (event.key === 'ArrowDown') {
+                    event.preventDefault();
+                    activeIndex = (activeIndex + 1) % items.length;
+                    updateActiveItem();
+                }
+
+                if (event.key === 'ArrowUp') {
+                    event.preventDefault();
+                    activeIndex = activeIndex <= 0 ? items.length - 1 : activeIndex - 1;
+                    updateActiveItem();
+                }
+
+                if (event.key === 'Enter' && activeIndex >= 0) {
+                    event.preventDefault();
+                    items[activeIndex].click();
+                }
+
+                if (event.key === 'Escape') {
+                    closeSuggestions();
+                }
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!form.contains(event.target)) {
+                    closeSuggestions();
+                }
+            });
+        })();
+    </script>
     @stack('scripts')
 </body>
 </html>

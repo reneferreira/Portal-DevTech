@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\ContatoController as AdminContatoController;
 */
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/busca/sugestoes', [HomeController::class, 'sugestoes'])->name('busca.sugestoes');
 Route::get('/busca', [HomeController::class, 'busca'])->name('busca');
 
 // Posts

@@ -8,6 +8,7 @@ use App\Models\Post;
 use App\Models\Categoria;
 use App\Models\Video;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class HomeController extends Controller
 {
@@ -197,5 +198,57 @@ class HomeController extends Controller
                     ->withQueryString();
 
         return view('front.busca', compact('posts', 'query', 'searchTerms'));
+    }
+
+    public function sugestoes(Request $request)
+    {
+        $query = trim((string) $request->get('q', ''));
+
+        if (Str::length($query) < 2) {
+            return response()->json([]);
+        }
+
+        $searchTerms = collect(preg_split('/\s+/', $query))
+            ->filter()
+            ->unique()
+            ->values();
+
+        $posts = Post::with(['categoria', 'tags'])
+            ->publicado()
+            ->where(function ($q) use ($query, $searchTerms) {
+                $q->where('titulo', 'LIKE', "%{$query}%")
+                    ->orWhereHas('categoria', function ($categoriaQuery) use ($query) {
+                        $categoriaQuery->where('nome', 'LIKE', "%{$query}%");
+                    })
+                    ->orWhereHas('tags', function ($tagQuery) use ($query) {
+                        $tagQuery->where('nome', 'LIKE', "%{$query}%");
+                    });
+
+                $searchTerms->each(function ($term) use ($q) {
+                    $q->orWhere(function ($termQuery) use ($term) {
+                        $termQuery->where('titulo', 'LIKE', "%{$term}%")
+                            ->orWhereHas('categoria', function ($categoriaQuery) use ($term) {
+                                $categoriaQuery->where('nome', 'LIKE', "%{$term}%");
+                            })
+                            ->orWhereHas('tags', function ($tagQuery) use ($term) {
+                                $tagQuery->where('nome', 'LIKE', "%{$term}%");
+                            });
+                    });
+                });
+            })
+            ->latest('publicado_em')
+            ->take(6)
+            ->get()
+            ->map(function (Post $post) {
+                return [
+                    'title' => $post->titulo,
+                    'url' => route('post', $post->slug),
+                    'category' => optional($post->categoria)->nome,
+                    'tags' => $post->tags->take(2)->pluck('nome')->values(),
+                ];
+            })
+            ->values();
+
+        return response()->json($posts);
     }
 }
