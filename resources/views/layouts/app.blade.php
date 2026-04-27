@@ -182,10 +182,10 @@
                 @else
                     <div class="d-flex gap-2">
                         <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill">
-                            <i class="bi bi-box-arrow-in-right"></i> Entrar
+                            <i class="bi bi-box-arrow-in-right"></i>
                         </a>
                         <a href="{{ route('register') }}" class="btn btn-primary rounded-pill">
-                            <i class="bi bi-person-plus"></i> Cadastrar
+                            <i class="bi bi-person-plus"></i>
                         </a>
                     </div>
                 @endauth
