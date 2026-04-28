@@ -21,12 +21,51 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa;
+            background: #f5f7fb;
+            color: #152033;
+            overflow-x: hidden;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 12% 10%, rgba(13, 110, 253, 0.12), transparent 28%),
+                radial-gradient(circle at 88% 0%, rgba(118, 75, 162, 0.12), transparent 26%),
+                linear-gradient(180deg, #ffffff 0%, #f5f7fb 52%, #eef3ff 100%);
+        }
+        .site-navbar {
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            background: rgba(255, 255, 255, 0.88) !important;
+            backdrop-filter: blur(18px);
         }
         .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
-            color: #0d6efd !important;
+            color: #12213f !important;
+            letter-spacing: -0.02em;
+        }
+        .navbar-brand i,
+        .brand-gradient {
+            background: linear-gradient(135deg, #0d6efd 0%, #764ba2 70%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .navbar .nav-link {
+            border-radius: 999px;
+            color: #41516d;
+            font-weight: 600;
+            padding: 0.55rem 0.85rem !important;
+            transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+        }
+        .navbar .nav-link:hover,
+        .navbar .nav-link.active {
+            color: #0d6efd;
+            background: rgba(13, 110, 253, 0.08);
+            transform: translateY(-1px);
         }
         .hero-section {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -95,6 +134,10 @@
         }
         .search-submit {
             min-width: 46px;
+            border: 0;
+            color: white;
+            background: linear-gradient(135deg, #0d6efd 0%, #764ba2 100%);
+            box-shadow: 0 10px 24px rgba(13, 110, 253, 0.2);
         }
         .search-suggestions {
             position: absolute;
@@ -141,19 +184,137 @@
             background: #eef2f7;
             color: #52606d;
         }
+        .nav-cta-group .btn,
+        .btn-primary {
+            border: 0;
+            background-image: linear-gradient(135deg, #0d6efd 0%, #764ba2 100%);
+            box-shadow: 0 12px 28px rgba(13, 110, 253, 0.2);
+        }
+        .nav-cta-group .btn-outline-primary,
+        .nav-cta-group .btn-outline-secondary {
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(13, 110, 253, 0.16);
+            color: #0d6efd;
+            box-shadow: none;
+        }
+        .mobile-nav-panel .nav-cta-group .btn-light {
+            color: #16213e;
+            background: #fff;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.14);
+        }
+        .mobile-nav-panel .nav-cta-group .btn-outline-light {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            box-shadow: none;
+        }
+        .mobile-menu-button {
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 0;
+            border-radius: 999px;
+            color: #fff;
+            background: linear-gradient(135deg, #0d6efd 0%, #764ba2 100%);
+            box-shadow: 0 14px 34px rgba(13, 110, 253, 0.28);
+        }
+        .mobile-menu-button:focus {
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.18);
+        }
+        .mobile-nav-panel {
+            width: min(88vw, 380px) !important;
+            border: 0;
+            color: #fff;
+            background:
+                linear-gradient(160deg, rgba(8, 18, 42, 0.97) 0%, rgba(29, 54, 104, 0.98) 45%, rgba(118, 75, 162, 0.96) 100%);
+            box-shadow: -28px 0 70px rgba(13, 25, 48, 0.34);
+        }
+        .mobile-nav-panel.offcanvas-end {
+            transform: translateX(105%);
+        }
+        .mobile-nav-panel.show:not(.hiding),
+        .mobile-nav-panel.showing {
+            transform: none;
+        }
+        .mobile-nav-panel::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 22% 12%, rgba(79, 172, 254, 0.32), transparent 30%),
+                radial-gradient(circle at 92% 88%, rgba(240, 147, 251, 0.24), transparent 32%);
+        }
+        .mobile-nav-panel .offcanvas-header,
+        .mobile-nav-panel .offcanvas-body {
+            position: relative;
+            z-index: 1;
+        }
+        .mobile-nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.95rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            background: rgba(255, 255, 255, 0.08);
+            transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+        }
+        .mobile-nav-link:hover,
+        .mobile-nav-link.active {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.16);
+            border-color: rgba(255, 255, 255, 0.22);
+            transform: translateX(-4px);
+        }
+        .mobile-category-list {
+            max-height: 230px;
+            overflow: auto;
+            padding-right: 0.2rem;
+        }
+        .mobile-category-list::-webkit-scrollbar {
+            width: 5px;
+        }
+        .mobile-category-list::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.28);
+            border-radius: 999px;
+        }
+        .mobile-nav-panel .search-form {
+            width: 100%;
+        }
+        .mobile-nav-panel .search-input {
+            border: 0;
+            background: rgba(255, 255, 255, 0.94);
+        }
+        .mobile-nav-panel .search-suggestions {
+            border: 0;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.24);
+        }
+        @media (max-width: 991.98px) {
+            .site-navbar .container {
+                min-height: 68px;
+            }
+            .navbar-brand {
+                font-size: 1.15rem;
+            }
+        }
     </style>
     @stack('styles')
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top site-navbar">
         <div class="container">
             <a class="navbar-brand" href="{{ route('home') }}">
                 <i class="bi bi-code-slash"></i> Portal DevTech
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <button class="mobile-menu-button d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileNav" aria-controls="mobileNav" aria-label="Abrir menu">
+                <i class="bi bi-list fs-3"></i>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="collapse navbar-collapse d-none d-lg-flex" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
@@ -239,7 +400,7 @@
                         </ul>
                     </div>
                 @else
-                    <div class="d-flex gap-2">
+                    <div class="d-flex gap-2 nav-cta-group">
                         <button type="button" class="btn btn-outline-secondary rounded-pill" data-pwa-enable>
                             Ativar notificacoes
                         </button>
@@ -254,6 +415,91 @@
             </div>
         </div>
     </nav>
+
+    <div class="offcanvas offcanvas-end mobile-nav-panel" tabindex="-1" id="mobileNav" aria-labelledby="mobileNavLabel">
+        <div class="offcanvas-header px-4 pt-4">
+            <div>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-code-slash fs-3"></i>
+                    <h5 class="offcanvas-title fw-bold mb-0" id="mobileNavLabel">Portal DevTech</h5>
+                </div>
+                <small class="text-white-50">Noticias, tecnologia e servicos digitais.</small>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Fechar"></button>
+        </div>
+        <div class="offcanvas-body px-4 pb-4">
+            <form class="d-flex search-form mb-4" action="{{ route('busca') }}" method="GET" autocomplete="off" data-search-form>
+                <input class="form-control rounded-pill search-input" type="search" name="q" placeholder="Buscar noticias..." data-search-input aria-label="Buscar noticias">
+                <button class="btn rounded-pill search-submit ms-2" type="submit" aria-label="Buscar">
+                    <i class="bi bi-search"></i>
+                </button>
+                <div class="search-suggestions" data-search-suggestions></div>
+            </form>
+
+            <div class="d-grid gap-2 mb-4">
+                <a class="mobile-nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">
+                    <i class="bi bi-house-door"></i> Home
+                </a>
+                <a class="mobile-nav-link" href="#servicos" data-bs-dismiss="offcanvas">
+                    <i class="bi bi-code"></i> Servicos
+                </a>
+                <a class="mobile-nav-link" href="#">
+                    <i class="bi bi-cart"></i> Loja
+                </a>
+                <a class="mobile-nav-link {{ request()->routeIs('contato') ? 'active' : '' }}" href="{{ route('contato') }}">
+                    <i class="bi bi-envelope"></i> Contato
+                </a>
+            </div>
+
+            <div class="mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="fw-semibold text-white-50 text-uppercase small">Categorias</span>
+                    <i class="bi bi-grid text-white-50"></i>
+                </div>
+                <div class="mobile-category-list d-grid gap-2">
+                    @foreach($categorias as $categoria)
+                        <a class="mobile-nav-link" href="{{ route('categoria', $categoria->slug) }}">
+                            <i class="bi bi-{{ $categoria->icone ?? 'tag' }}"></i>
+                            <span class="flex-grow-1">{{ $categoria->nome }}</span>
+                            <span class="badge rounded-pill text-bg-light">{{ $categoria->posts_count }}</span>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+
+            @auth
+                <div class="p-3 rounded-4" style="background: rgba(255,255,255,0.1);">
+                    <div class="fw-bold">{{ auth()->user()->name }}</div>
+                    <small class="text-white-50">{{ auth()->user()->email }}</small>
+                    <div class="d-grid gap-2 mt-3">
+                        @if(auth()->user()->is_admin)
+                            <a class="btn btn-light rounded-pill" href="{{ route('admin.dashboard') }}">
+                                <i class="bi bi-speedometer2"></i> Painel Admin
+                            </a>
+                        @endif
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-light rounded-pill w-100">
+                                <i class="bi bi-box-arrow-right"></i> Sair
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @else
+                <div class="d-grid gap-2 nav-cta-group">
+                    <button type="button" class="btn btn-outline-light rounded-pill" data-pwa-enable>
+                        <i class="bi bi-bell"></i> Ativar notificacoes
+                    </button>
+                    <a href="{{ route('login') }}" class="btn btn-light rounded-pill">
+                        <i class="bi bi-box-arrow-in-right"></i> Entrar
+                    </a>
+                    <a href="{{ route('register') }}" class="btn btn-primary rounded-pill">
+                        <i class="bi bi-person-plus"></i> Criar conta
+                    </a>
+                </div>
+            @endauth
+        </div>
+    </div>
 
     <main>
         @yield('content')
@@ -312,24 +558,13 @@
     <script src="{{ asset('js/pwa.js') }}"></script>
     <script>
         (() => {
-            const form = document.querySelector('[data-search-form]');
+            const forms = document.querySelectorAll('[data-search-form]');
 
-            if (!form) {
+            if (!forms.length) {
                 return;
             }
 
-            const input = form.querySelector('[data-search-input]');
-            const suggestions = form.querySelector('[data-search-suggestions]');
             const endpoint = @json(route('busca.sugestoes'));
-            let controller = null;
-            let activeIndex = -1;
-            let debounceTimer = null;
-
-            const closeSuggestions = () => {
-                suggestions.classList.remove('show');
-                suggestions.innerHTML = '';
-                activeIndex = -1;
-            };
 
             const escapeHtml = (value) => value
                 .replaceAll('&', '&amp;')
@@ -338,122 +573,140 @@
                 .replaceAll('"', '&quot;')
                 .replaceAll("'", '&#039;');
 
-            const updateActiveItem = () => {
-                const items = suggestions.querySelectorAll('[data-suggestion-item]');
+            forms.forEach((form) => {
+                const input = form.querySelector('[data-search-input]');
+                const suggestions = form.querySelector('[data-search-suggestions]');
+                let controller = null;
+                let activeIndex = -1;
+                let debounceTimer = null;
 
-                items.forEach((item, index) => {
-                    item.classList.toggle('active', index === activeIndex);
-                });
-            };
-
-            const renderSuggestions = (items) => {
-                if (!items.length) {
-                    closeSuggestions();
+                if (!input || !suggestions) {
                     return;
                 }
 
-                suggestions.innerHTML = items.map((item, index) => {
-                    const category = item.category
-                        ? `<span class="search-suggestion-pill">${escapeHtml(item.category)}</span>`
-                        : '';
+                const closeSuggestions = () => {
+                    suggestions.classList.remove('show');
+                    suggestions.innerHTML = '';
+                    activeIndex = -1;
+                };
 
-                    const tags = (item.tags || [])
-                        .map((tag) => `<span class="search-suggestion-pill">#${escapeHtml(tag)}</span>`)
-                        .join('');
+                const updateActiveItem = () => {
+                    const items = suggestions.querySelectorAll('[data-suggestion-item]');
 
-                    return `
-                        <a href="${item.url}" class="search-suggestion-item" data-suggestion-item data-index="${index}">
-                            <strong>${escapeHtml(item.title)}</strong>
-                            <div class="search-suggestion-meta">
-                                ${category}
-                                ${tags}
-                            </div>
-                        </a>
-                    `;
-                }).join('');
-
-                suggestions.classList.add('show');
-                activeIndex = -1;
-            };
-
-            const fetchSuggestions = async (value) => {
-                if (value.trim().length < 2) {
-                    closeSuggestions();
-                    return;
-                }
-
-                if (controller) {
-                    controller.abort();
-                }
-
-                controller = new AbortController();
-
-                try {
-                    const response = await fetch(`${endpoint}?q=${encodeURIComponent(value)}`, {
-                        signal: controller.signal,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
+                    items.forEach((item, index) => {
+                        item.classList.toggle('active', index === activeIndex);
                     });
+                };
 
-                    if (!response.ok) {
+                const renderSuggestions = (items) => {
+                    if (!items.length) {
                         closeSuggestions();
                         return;
                     }
 
-                    renderSuggestions(await response.json());
-                } catch (error) {
-                    if (error.name !== 'AbortError') {
+                    suggestions.innerHTML = items.map((item, index) => {
+                        const category = item.category
+                            ? `<span class="search-suggestion-pill">${escapeHtml(item.category)}</span>`
+                            : '';
+
+                        const tags = (item.tags || [])
+                            .map((tag) => `<span class="search-suggestion-pill">#${escapeHtml(tag)}</span>`)
+                            .join('');
+
+                        return `
+                            <a href="${item.url}" class="search-suggestion-item" data-suggestion-item data-index="${index}">
+                                <strong>${escapeHtml(item.title)}</strong>
+                                <div class="search-suggestion-meta">
+                                    ${category}
+                                    ${tags}
+                                </div>
+                            </a>
+                        `;
+                    }).join('');
+
+                    suggestions.classList.add('show');
+                    activeIndex = -1;
+                };
+
+                const fetchSuggestions = async (value) => {
+                    if (value.trim().length < 2) {
+                        closeSuggestions();
+                        return;
+                    }
+
+                    if (controller) {
+                        controller.abort();
+                    }
+
+                    controller = new AbortController();
+
+                    try {
+                        const response = await fetch(`${endpoint}?q=${encodeURIComponent(value)}`, {
+                            signal: controller.signal,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            closeSuggestions();
+                            return;
+                        }
+
+                        renderSuggestions(await response.json());
+                    } catch (error) {
+                        if (error.name !== 'AbortError') {
+                            closeSuggestions();
+                        }
+                    }
+                };
+
+                input.addEventListener('input', () => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => fetchSuggestions(input.value), 180);
+                });
+
+                input.addEventListener('focus', () => {
+                    if (suggestions.innerHTML.trim() !== '') {
+                        suggestions.classList.add('show');
+                    }
+                });
+
+                input.addEventListener('keydown', (event) => {
+                    const items = suggestions.querySelectorAll('[data-suggestion-item]');
+
+                    if (!items.length) {
+                        return;
+                    }
+
+                    if (event.key === 'ArrowDown') {
+                        event.preventDefault();
+                        activeIndex = (activeIndex + 1) % items.length;
+                        updateActiveItem();
+                    }
+
+                    if (event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        activeIndex = activeIndex <= 0 ? items.length - 1 : activeIndex - 1;
+                        updateActiveItem();
+                    }
+
+                    if (event.key === 'Enter' && activeIndex >= 0) {
+                        event.preventDefault();
+                        items[activeIndex].click();
+                    }
+
+                    if (event.key === 'Escape') {
                         closeSuggestions();
                     }
-                }
-            };
+                });
 
-            input.addEventListener('input', () => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => fetchSuggestions(input.value), 180);
-            });
-
-            input.addEventListener('focus', () => {
-                if (suggestions.innerHTML.trim() !== '') {
-                    suggestions.classList.add('show');
-                }
-            });
-
-            input.addEventListener('keydown', (event) => {
-                const items = suggestions.querySelectorAll('[data-suggestion-item]');
-
-                if (!items.length) {
-                    return;
-                }
-
-                if (event.key === 'ArrowDown') {
-                    event.preventDefault();
-                    activeIndex = (activeIndex + 1) % items.length;
-                    updateActiveItem();
-                }
-
-                if (event.key === 'ArrowUp') {
-                    event.preventDefault();
-                    activeIndex = activeIndex <= 0 ? items.length - 1 : activeIndex - 1;
-                    updateActiveItem();
-                }
-
-                if (event.key === 'Enter' && activeIndex >= 0) {
-                    event.preventDefault();
-                    items[activeIndex].click();
-                }
-
-                if (event.key === 'Escape') {
-                    closeSuggestions();
-                }
-            });
-
-            document.addEventListener('click', (event) => {
-                if (!form.contains(event.target)) {
-                    closeSuggestions();
-                }
+                document.addEventListener('click', (event) => {
+                    if (!form.contains(event.target)) {
+                        closeSuggestions();
+                    }
+                });
             });
         })();
     </script>

@@ -610,6 +610,11 @@ document.addEventListener('DOMContentLoaded', () => {
         --border-color: #dee2e6;
         --neon-shadow: 0 0 10px rgba(13, 110, 253, 0.3);
         --neon-hover: 0 0 20px rgba(13, 110, 253, 0.5);
+        --tech-blue: #0d6efd;
+        --tech-cyan: #00d4ff;
+        --tech-violet: #764ba2;
+        --tech-pink: #f093fb;
+        --surface-glass: rgba(255, 255, 255, 0.82);
     }
 
     [data-theme="dark"] {
@@ -627,15 +632,46 @@ document.addEventListener('DOMContentLoaded', () => {
         transition: all 0.3s ease;
     }
 
+    .container > section,
+    .col-lg-9 > section {
+        scroll-margin-top: 96px;
+    }
+
+    section h2,
+    section .h3 {
+        letter-spacing: -0.02em;
+        font-weight: 800;
+        color: #152033;
+    }
+
+    section h2 i,
+    section .h3 i {
+        color: var(--tech-blue);
+    }
+
     /* Hero Banner com Animação de Rede */
     .hero-banner {
         position: relative;
-        min-height: 400px;
+        min-height: min(560px, 72vh);
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        background: linear-gradient(135deg, #0a0a2a 0%, #1a1a3e 50%, #0a0a2a 100%);
+        background:
+            radial-gradient(circle at 18% 22%, rgba(0, 212, 255, 0.24), transparent 26%),
+            radial-gradient(circle at 82% 18%, rgba(240, 147, 251, 0.26), transparent 28%),
+            linear-gradient(135deg, #07111f 0%, #121b3b 46%, #211143 100%);
+        isolation: isolate;
+    }
+
+    .hero-banner::after {
+        content: "";
+        position: absolute;
+        inset: auto 0 0;
+        height: 34%;
+        z-index: 1;
+        pointer-events: none;
+        background: linear-gradient(180deg, transparent 0%, rgba(245, 247, 251, 0.92) 100%);
     }
 
     .network-bg {
@@ -655,25 +691,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     .hero-content {
         position: relative;
-        z-index: 2;
+        z-index: 3;
         text-align: center;
         padding: 60px 0;
     }
 
     .hero-title {
         font-weight: 800;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+        background: linear-gradient(135deg, #ffffff 0%, #00d4ff 38%, #f093fb 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        text-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
-        letter-spacing: -0.02em;
+        text-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+        letter-spacing: 0;
     }
 
     .hero-subtitle {
-        font-size: 1.5rem;
+        font-size: clamp(1rem, 2.5vw, 1.5rem);
         color: rgba(255, 255, 255, 0.9);
         font-weight: 300;
+    }
+
+    .hero-buttons .btn {
+        border: 0;
+        box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+    }
+
+    .hero-buttons .btn-primary {
+        background: linear-gradient(135deg, var(--tech-blue) 0%, var(--tech-violet) 100%);
+    }
+
+    .hero-buttons .btn-outline-light {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.24);
+        backdrop-filter: blur(10px);
     }
 
     @keyframes fadeInUp {
@@ -701,10 +752,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* Cards */
     .card, .post-card, .category-card, .weather-card, .service-card {
-        background-color: var(--card-bg);
-        border-color: var(--border-color);
+        background: var(--surface-glass);
+        border: 1px solid rgba(13, 110, 253, 0.1);
         transition: all 0.3s ease;
-        border-radius: 15px;
+        border-radius: 18px;
+        box-shadow: 0 16px 42px rgba(17, 32, 63, 0.08);
+        backdrop-filter: blur(12px);
     }
 
     /* Neon Hover Effect */
@@ -714,8 +767,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     .neon-hover:hover {
         transform: translateY(-5px);
-        box-shadow: var(--neon-shadow);
-        border-color: #0d6efd;
+        box-shadow: 0 24px 50px rgba(13, 110, 253, 0.18);
+        border-color: rgba(13, 110, 253, 0.38);
     }
 
     .neon-hover:hover .card-title a {
@@ -738,7 +791,7 @@ document.addEventListener('DOMContentLoaded', () => {
     .btn-theme-toggle {
         width: 50px;
         height: 50px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--tech-blue) 0%, var(--tech-violet) 100%);
         border: none;
         color: white;
         font-size: 1.5rem;
@@ -754,15 +807,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* Carousel Slide */
     .carousel-section {
-        margin-top: 30px;
+        margin-top: -52px;
+        position: relative;
+        z-index: 4;
     }
 
     .carousel-slide {
         height: 500px;
         background-size: cover;
         background-position: center;
-        border-radius: 20px;
+        border-radius: 22px;
         position: relative;
+        overflow: hidden;
+        box-shadow: 0 26px 70px rgba(17, 32, 63, 0.22);
     }
 
     .carousel-caption {
@@ -770,36 +827,89 @@ document.addEventListener('DOMContentLoaded', () => {
         left: 5%;
         right: auto;
         text-align: left;
-        width: 50%;
+        width: min(620px, 72%);
+        padding: 1.5rem;
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(7, 17, 31, 0.78), rgba(22, 34, 69, 0.42));
+        backdrop-filter: blur(10px);
     }
 
     @media (max-width: 768px) {
+        .hero-content {
+            padding: 44px 14px 84px;
+        }
+        .hero-buttons {
+            display: grid;
+            gap: 0.75rem;
+        }
+        .hero-buttons .btn {
+            width: 100%;
+            margin: 0 !important;
+        }
+        .carousel-section {
+            margin-top: -34px;
+        }
         .carousel-slide {
-            height: 300px;
+            height: 360px;
+            border-radius: 18px;
         }
         .carousel-caption {
-            width: 90%;
-            bottom: 10%;
+            width: calc(100% - 28px);
+            left: 14px;
+            bottom: 14px;
+            padding: 1rem;
         }
         .carousel-caption h2 {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
+        }
+        .carousel-caption .lead {
+            font-size: 0.92rem;
         }
         .hero-banner {
-            min-height: 300px;
+            min-height: 420px;
         }
         .hero-title {
-            font-size: 2.5rem !important;
+            font-size: 2.7rem !important;
         }
         .hero-subtitle {
             font-size: 1rem;
+        }
+        .post-card .row {
+            display: block;
+        }
+        .post-card img {
+            width: 100%;
+            min-height: 210px !important;
+            border-radius: 18px 18px 0 0 !important;
+        }
+        .post-card .card-body {
+            padding: 1.1rem;
+        }
+        .theme-toggle-wrapper {
+            right: 18px;
+            bottom: 18px;
         }
     }
 
     /* Category Card */
     .category-card {
-        width: 120px;
-        border-radius: 15px;
-        background: linear-gradient(135deg, var(--card-bg) 0%, var(--bg-secondary) 100%);
+        width: 132px;
+        min-height: 126px;
+        border-radius: 18px;
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(239, 246, 255, 0.9) 100%);
+    }
+
+    .category-card i {
+        width: 52px;
+        height: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-inline: auto;
+        border-radius: 16px;
+        color: #fff !important;
+        background: linear-gradient(135deg, var(--tech-blue) 0%, var(--tech-cyan) 100%);
     }
 
     /* Trending Items */
@@ -866,7 +976,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /* Gradient Backgrounds */
     .bg-gradient-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--tech-blue) 0%, var(--tech-violet) 100%);
     }
 
     .bg-gradient-warning {
@@ -882,7 +992,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     .category-badge {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--tech-blue) 0%, var(--tech-violet) 100%);
         color: white;
         padding: 4px 12px;
         border-radius: 20px;
@@ -907,7 +1017,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     .weather-card .card-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--tech-blue) 0%, var(--tech-violet) 100%);
         font-weight: 500;
     }
     
@@ -930,7 +1040,7 @@ document.addEventListener('DOMContentLoaded', () => {
     #currentTemp {
         font-size: 3.5rem;
         font-weight: bold;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--tech-blue) 0%, var(--tech-cyan) 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;

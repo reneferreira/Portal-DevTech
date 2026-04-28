@@ -248,20 +248,28 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#configMenu">
+                            <a class="nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}" 
+                               href="{{ route('admin.users.index') }}">
+                                <i class="bi bi-people"></i>
+                                Usuários
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.profile.*') ? 'active' : '' }}" href="#" data-bs-toggle="collapse" data-bs-target="#configMenu">
                                 <i class="bi bi-gear"></i>
                                 Configurações
                                 <i class="bi bi-chevron-down float-end"></i>
                             </a>
-                            <div class="collapse" id="configMenu">
+                            <div class="collapse {{ request()->routeIs('admin.profile.*') ? 'show' : '' }}" id="configMenu">
                                 <ul class="nav flex-column ms-3">
                                     <li class="nav-item">
-                                        <a class="nav-link py-2" href="#">
+                                        <a class="nav-link py-2 {{ request()->routeIs('admin.profile.edit') ? 'active' : '' }}" href="{{ route('admin.profile.edit') }}">
                                             <i class="bi bi-person"></i> Perfil
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a class="nav-link py-2" href="#">
+                                        <a class="nav-link py-2 {{ request()->routeIs('admin.profile.password') ? 'active' : '' }}" href="{{ route('admin.profile.password') }}">
                                             <i class="bi bi-shield"></i> Segurança
                                         </a>
                                     </li>
@@ -307,8 +315,8 @@
                                 <i class="bi bi-person-circle"></i> {{ auth()->user()->name }}
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> Meu Perfil</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-shield-lock"></i> Alterar Senha</a></li>
+                                <li><a class="dropdown-item" href="{{ route('admin.profile.edit') }}"><i class="bi bi-person"></i> Meu Perfil</a></li>
+                                <li><a class="dropdown-item" href="{{ route('admin.profile.password') }}"><i class="bi bi-shield-lock"></i> Alterar Senha</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <form method="POST" action="{{ route('logout') }}">

@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\ContatoController as AdminContatoController;
 use App\Http\Controllers\Admin\PushNotificationController as AdminPushNotificationController;
+use App\Http\Controllers\Admin\AccountController as AdminAccountController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\PushSubscriptionController;
 
 Route::get('/push/public-key', [PushSubscriptionController::class, 'publicKey'])->name('push.public-key');
@@ -71,6 +73,11 @@ Route::middleware('auth')->group(function () {
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/meu-perfil', [AdminAccountController::class, 'edit'])->name('profile.edit');
+    Route::patch('/meu-perfil', [AdminAccountController::class, 'update'])->name('profile.update');
+    Route::get('/mudar-senha', [AdminAccountController::class, 'password'])->name('profile.password');
+    Route::patch('/mudar-senha', [AdminAccountController::class, 'updatePassword'])->name('profile.password.update');
+    Route::get('/usuarios', [AdminUserController::class, 'index'])->name('users.index');
 
     Route::resource('posts', AdminPostController::class);
     Route::resource('categorias', AdminCategoryController::class);
