@@ -11,6 +11,12 @@
                 <h5 class="mb-0"><i class="bi bi-bell"></i> Enviar notificacao</h5>
             </div>
             <div class="card-body">
+                @if(! $subscriptionsTableExists)
+                    <div class="alert alert-danger">
+                        A tabela <code>push_subscriptions</code> ainda nao existe. Execute <code>php artisan migrate</code> no ambiente de producao para ativar as notificacoes.
+                    </div>
+                @endif
+
                 @if(! $publicKeyConfigured || ! $privateKeyConfigured)
                     <div class="alert alert-warning">
                         Configure <code>VAPID_PUBLIC_KEY</code> e <code>VAPID_PRIVATE_KEY</code> no ambiente antes de enviar notificacoes.
@@ -39,7 +45,7 @@
                         @error('url')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
 
-                    <button type="submit" class="btn btn-primary" @disabled(! $publicKeyConfigured || ! $privateKeyConfigured || $subscriptionsCount === 0)>
+                    <button type="submit" class="btn btn-primary" @disabled(! $subscriptionsTableExists || ! $publicKeyConfigured || ! $privateKeyConfigured || $subscriptionsCount === 0)>
                         <i class="bi bi-send"></i> Enviar agora
                     </button>
                 </form>
