@@ -1,4 +1,4 @@
-const CACHE_NAME = 'portal-devtech-v2';
+const CACHE_NAME = 'portal-devtech-v3';
 const OFFLINE_URLS = [
     '/',
     '/manifest.webmanifest',
@@ -41,17 +41,22 @@ self.addEventListener('push', (event) => {
         badge: '/icons/badge-96.png'
     };
 
-    const data = event.data ? { ...fallback, ...event.data.json() } : fallback;
-
     event.waitUntil(
-        self.registration.showNotification(data.title, {
-            body: data.body,
-            icon: data.icon,
-            badge: data.badge,
-            data: {
-                url: data.url || '/'
-            }
-        })
+        Promise.resolve()
+            .then(() => event.data ? event.data.json() : fetch('/push/latest-message', { cache: 'no-store' }).then((response) => response.json()))
+            .catch(() => fallback)
+            .then((payload) => {
+                const data = { ...fallback, ...payload };
+
+                return self.registration.showNotification(data.title, {
+                    body: data.body,
+                    icon: data.icon,
+                    badge: data.badge,
+                    data: {
+                        url: data.url || '/'
+                    }
+                });
+            })
     );
 });
 

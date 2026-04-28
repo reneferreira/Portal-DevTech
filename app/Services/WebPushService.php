@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\PushSubscription as PushSubscriptionModel;
+use App\Models\PushMessage;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\Subscription;
@@ -19,6 +20,7 @@ class WebPushService
     public function send(Collection $subscriptions, array $payload): array
     {
         $this->ensureOpenSslConfig();
+        $this->storeLatestMessage($payload);
 
         $publicKey = $this->normalizeKey(config('services.webpush.public_key'));
         $privateKey = $this->normalizeKey(config('services.webpush.private_key'));
@@ -121,6 +123,23 @@ class WebPushService
         $key = trim($key, " \t\n\r\0\x0B\"'");
 
         return preg_replace('/\s+/', '', $key) ?: null;
+    }
+
+    private function storeLatestMessage(array $payload): void
+    {
+        try {
+            PushMessage::create([
+                'title' => (string) ($payload['title'] ?? 'Portal DevTech'),
+                'body' => (string) ($payload['body'] ?? 'Tem novidade no portal.'),
+                'url' => (string) ($payload['url'] ?? route('home')),
+                'icon' => (string) ($payload['icon'] ?? asset('icons/icon-192.png')),
+                'badge' => (string) ($payload['badge'] ?? asset('icons/badge-96.png')),
+            ]);
+        } catch (Throwable $exception) {
+            Log::warning('Could not store latest push message.', [
+                'message' => $exception->getMessage(),
+            ]);
+        }
     }
 
     private function shouldDeleteSubscription(string $reason, bool $expired): bool

@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\PushNotificationController as AdminPushNotificati
 use App\Http\Controllers\PushSubscriptionController;
 
 Route::get('/push/public-key', [PushSubscriptionController::class, 'publicKey'])->name('push.public-key');
+Route::get('/push/latest-message', [PushSubscriptionController::class, 'latestMessage'])->name('push.latest-message');
 Route::post('/push/subscribe', [PushSubscriptionController::class, 'store'])->name('push.subscribe');
 Route::delete('/push/unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
 
