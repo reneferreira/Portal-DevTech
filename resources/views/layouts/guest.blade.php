@@ -8,9 +8,7 @@
 
         <title>{{ config('app.name', 'Portal DevTech') }}</title>
 
-        <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
-        <link rel="icon" href="{{ asset('icons/favicon.svg') }}" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+        @include('partials.pwa-head')
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
