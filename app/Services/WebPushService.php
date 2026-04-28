@@ -7,6 +7,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\Subscription;
 use Minishlink\WebPush\WebPush;
+use Throwable;
 
 class WebPushService
 {
@@ -19,54 +20,76 @@ class WebPushService
     {
         $sent = 0;
         $failed = 0;
+        $publicKey = $this->normalizeKey(config('services.webpush.public_key'));
+        $privateKey = $this->normalizeKey(config('services.webpush.private_key'));
 
-        if (! config('services.webpush.public_key') || ! config('services.webpush.private_key')) {
+        if (! $publicKey || ! $privateKey) {
             Log::warning('Push notification skipped: VAPID keys are not configured.');
 
             return compact('sent', 'failed');
         }
 
-        $webPush = new WebPush([
-            'VAPID' => [
-                'subject' => config('services.webpush.subject'),
-                'publicKey' => config('services.webpush.public_key'),
-                'privateKey' => config('services.webpush.private_key'),
-            ],
-        ]);
-
-        foreach ($subscriptions as $subscription) {
-            $webPush->queueNotification(
-                Subscription::create([
-                    'endpoint' => $subscription->endpoint,
-                    'publicKey' => $subscription->public_key,
-                    'authToken' => $subscription->auth_token,
-                    'contentEncoding' => $subscription->content_encoding ?: 'aes128gcm',
-                ]),
-                json_encode($payload, JSON_UNESCAPED_UNICODE)
-            );
-        }
-
-        foreach ($webPush->flush() as $report) {
-            $endpoint = $report->getRequest()->getUri()->__toString();
-            $subscription = $subscriptions->firstWhere('endpoint', $endpoint);
-
-            if ($report->isSuccess()) {
-                $sent++;
-                $subscription?->forceFill(['last_used_at' => now()])->save();
-                continue;
-            }
-
-            $failed++;
-            Log::warning('Push notification failed.', [
-                'endpoint' => $endpoint,
-                'reason' => $report->getReason(),
+        try {
+            $webPush = new WebPush([
+                'VAPID' => [
+                    'subject' => config('services.webpush.subject') ?: config('app.url'),
+                    'publicKey' => $publicKey,
+                    'privateKey' => $privateKey,
+                ],
             ]);
 
-            if ($report->isSubscriptionExpired()) {
-                $subscription?->delete();
+            foreach ($subscriptions as $subscription) {
+                $webPush->queueNotification(
+                    Subscription::create([
+                        'endpoint' => $subscription->endpoint,
+                        'publicKey' => $subscription->public_key,
+                        'authToken' => $subscription->auth_token,
+                        'contentEncoding' => $subscription->content_encoding ?: 'aes128gcm',
+                    ]),
+                    json_encode($payload, JSON_UNESCAPED_UNICODE)
+                );
             }
+
+            foreach ($webPush->flush() as $report) {
+                $endpoint = $report->getRequest()->getUri()->__toString();
+                $subscription = $subscriptions->firstWhere('endpoint', $endpoint);
+
+                if ($report->isSuccess()) {
+                    $sent++;
+                    $subscription?->forceFill(['last_used_at' => now()])->save();
+                    continue;
+                }
+
+                $failed++;
+                Log::warning('Push notification failed.', [
+                    'endpoint' => $endpoint,
+                    'reason' => $report->getReason(),
+                ]);
+
+                if ($report->isSubscriptionExpired()) {
+                    $subscription?->delete();
+                }
+            }
+        } catch (Throwable $exception) {
+            $failed += $subscriptions->count();
+
+            Log::error('Push notification dispatch failed.', [
+                'message' => $exception->getMessage(),
+                'exception' => $exception::class,
+            ]);
         }
 
         return compact('sent', 'failed');
+    }
+
+    private function normalizeKey(?string $key): ?string
+    {
+        if (! $key) {
+            return null;
+        }
+
+        $key = trim($key, " \t\n\r\0\x0B\"'");
+
+        return preg_replace('/\s+/', '', $key) ?: null;
     }
 }
