@@ -5,6 +5,7 @@
     const unsubscribeUrl = meta('push-unsubscribe-url');
     const publicKeyUrl = meta('push-public-key-url');
     const buttons = document.querySelectorAll('[data-pwa-enable]');
+    let isSubscribing = false;
 
     if (!('serviceWorker' in navigator)) {
         buttons.forEach((button) => {
@@ -67,11 +68,15 @@
 
         if (existingSubscription) {
             const synced = await saveSubscription(existingSubscription);
-            updateButtons(synced ? 'Notificacoes ativas' : 'Sincronizar notificacoes');
+            if (!isSubscribing) {
+                updateButtons(synced ? 'Notificacoes ativas' : 'Sincronizar notificacoes');
+            }
             return;
         }
 
-        updateButtons('Ativar notificacoes');
+        if (!isSubscribing) {
+            updateButtons('Ativar notificacoes');
+        }
     };
 
     const subscribe = async () => {
@@ -80,15 +85,26 @@
             return;
         }
 
+        if (Notification.permission === 'denied') {
+            updateButtons('Permissao bloqueada', true);
+            return;
+        }
+
         const permission = await Notification.requestPermission();
 
         if (permission !== 'granted') {
-            updateButtons('Permissao negada');
+            updateButtons('Permissao nao ativada');
             return;
         }
 
         const registration = await navigator.serviceWorker.ready;
         const keyResponse = await fetch(publicKeyUrl, { headers: { Accept: 'application/json' } });
+
+        if (!keyResponse.ok) {
+            updateButtons('Erro na chave push');
+            return;
+        }
+
         const { publicKey } = await keyResponse.json();
 
         if (!publicKey) {
@@ -106,9 +122,22 @@
     };
 
     buttons.forEach((button) => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', async () => {
+            if (isSubscribing) {
+                return;
+            }
+
+            isSubscribing = true;
             updateButtons('Ativando...', true);
-            subscribe().catch(() => updateButtons('Tente novamente'));
+
+            try {
+                await subscribe();
+            } catch (error) {
+                console.error('Erro ao ativar notificacoes push:', error);
+                updateButtons('Tente novamente');
+            } finally {
+                isSubscribing = false;
+            }
         });
     });
 
