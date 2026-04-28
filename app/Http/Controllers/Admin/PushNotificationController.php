@@ -45,9 +45,12 @@ class PushNotificationController extends Controller
             'badge' => asset('icons/badge-96.png'),
         ]);
 
-        return back()->with(
-            'success',
-            "Notificacao enviada. Sucesso: {$result['sent']}. Falhas: {$result['failed']}."
-        );
+        $message = "Notificacao enviada. Sucesso: {$result['sent']}. Falhas: {$result['failed']}.";
+
+        if (! empty($result['errors'])) {
+            $message .= ' Motivo: ' . implode(' | ', array_slice($result['errors'], 0, 2));
+        }
+
+        return back()->with($result['failed'] > 0 ? 'error' : 'success', $message);
     }
 }

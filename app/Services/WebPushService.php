@@ -20,13 +20,14 @@ class WebPushService
     {
         $sent = 0;
         $failed = 0;
+        $errors = [];
         $publicKey = $this->normalizeKey(config('services.webpush.public_key'));
         $privateKey = $this->normalizeKey(config('services.webpush.private_key'));
 
         if (! $publicKey || ! $privateKey) {
             Log::warning('Push notification skipped: VAPID keys are not configured.');
 
-            return compact('sent', 'failed');
+            return compact('sent', 'failed', 'errors');
         }
 
         try {
@@ -61,17 +62,20 @@ class WebPushService
                 }
 
                 $failed++;
+                $errors[] = $report->getReason();
+
                 Log::warning('Push notification failed.', [
                     'endpoint' => $endpoint,
                     'reason' => $report->getReason(),
                 ]);
 
-                if ($report->isSubscriptionExpired()) {
+                if ($report->isSubscriptionExpired() || str_contains($report->getReason(), '404') || str_contains($report->getReason(), '410')) {
                     $subscription?->delete();
                 }
             }
         } catch (Throwable $exception) {
             $failed += $subscriptions->count();
+            $errors[] = $exception->getMessage();
 
             Log::error('Push notification dispatch failed.', [
                 'message' => $exception->getMessage(),
@@ -79,7 +83,11 @@ class WebPushService
             ]);
         }
 
-        return compact('sent', 'failed');
+        return [
+            'sent' => $sent,
+            'failed' => $failed,
+            'errors' => array_values(array_unique(array_filter($errors))),
+        ];
     }
 
     private function normalizeKey(?string $key): ?string

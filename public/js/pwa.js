@@ -29,6 +29,20 @@
         return outputArray;
     };
 
+    const arrayBufferToBase64Url = (buffer) => {
+        const bytes = new Uint8Array(buffer);
+        let binary = '';
+
+        bytes.forEach((byte) => {
+            binary += String.fromCharCode(byte);
+        });
+
+        return window.btoa(binary)
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/, '');
+    };
+
     const postJson = (url, method, payload) => fetch(url, {
         method,
         headers: {
@@ -65,6 +79,36 @@
         return response.ok;
     };
 
+    const fetchPublicKey = async () => {
+        if (!publicKeyUrl) {
+            return null;
+        }
+
+        const keyResponse = await withTimeout(
+            fetch(publicKeyUrl, { headers: { Accept: 'application/json' } }),
+            10000,
+            'Chave demorou'
+        );
+
+        if (keyResponse.timedOut || !keyResponse.ok) {
+            return null;
+        }
+
+        const { publicKey } = await keyResponse.json();
+
+        return publicKey || null;
+    };
+
+    const usesCurrentPublicKey = (subscription, publicKey) => {
+        const applicationServerKey = subscription.options?.applicationServerKey;
+
+        if (!applicationServerKey || !publicKey) {
+            return true;
+        }
+
+        return arrayBufferToBase64Url(applicationServerKey) === publicKey;
+    };
+
     const updateButtons = (message, disabled = false) => {
         buttons.forEach((button) => {
             button.disabled = disabled;
@@ -83,6 +127,14 @@
         const existingSubscription = await serviceWorkerRegistration.pushManager.getSubscription();
 
         if (existingSubscription) {
+            const publicKey = await fetchPublicKey();
+
+            if (!usesCurrentPublicKey(existingSubscription, publicKey)) {
+                await existingSubscription.unsubscribe();
+                updateButtons('Ativar notificacoes');
+                return;
+            }
+
             const synced = await saveSubscription(existingSubscription);
             if (!isSubscribing) {
                 updateButtons(synced ? 'Notificacoes ativas' : 'Sincronizar notificacoes');
@@ -139,23 +191,7 @@
             return;
         }
 
-        const keyResponse = await withTimeout(
-            fetch(publicKeyUrl, { headers: { Accept: 'application/json' } }),
-            10000,
-            'Chave demorou'
-        );
-
-        if (keyResponse.timedOut) {
-            updateButtons('Chave demorou');
-            return;
-        }
-
-        if (!keyResponse.ok) {
-            updateButtons('Erro na chave push');
-            return;
-        }
-
-        const { publicKey } = await keyResponse.json();
+        const publicKey = await fetchPublicKey();
 
         if (!publicKey) {
             updateButtons('Push sem chave', true);
