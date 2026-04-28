@@ -38,6 +38,16 @@
         body: JSON.stringify(payload)
     });
 
+    const saveSubscription = async (subscription) => {
+        if (!subscribeUrl) {
+            return false;
+        }
+
+        const response = await postJson(subscribeUrl, 'POST', subscription.toJSON());
+
+        return response.ok;
+    };
+
     const updateButtons = (message, disabled = false) => {
         buttons.forEach((button) => {
             button.disabled = disabled;
@@ -56,7 +66,8 @@
         const existingSubscription = await registration.pushManager.getSubscription();
 
         if (existingSubscription) {
-            updateButtons('Notificacoes ativas');
+            const synced = await saveSubscription(existingSubscription);
+            updateButtons(synced ? 'Notificacoes ativas' : 'Sincronizar notificacoes');
             return;
         }
 
@@ -90,8 +101,8 @@
             applicationServerKey: urlBase64ToUint8Array(publicKey)
         });
 
-        await postJson(subscribeUrl, 'POST', subscription.toJSON());
-        updateButtons('Notificacoes ativas');
+        const synced = await saveSubscription(subscription);
+        updateButtons(synced ? 'Notificacoes ativas' : 'Sincronizar notificacoes');
     };
 
     buttons.forEach((button) => {

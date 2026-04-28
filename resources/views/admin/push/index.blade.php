@@ -20,7 +20,13 @@
                 @if(! $publicKeyConfigured || ! $privateKeyConfigured)
                     <div class="alert alert-warning">
                         Configure <code>VAPID_PUBLIC_KEY</code> e <code>VAPID_PRIVATE_KEY</code> no ambiente antes de enviar notificacoes.
-                        Gere as chaves com <code>php artisan push:vapid-keys</code>.
+                        Gere as chaves com <code>php artisan push:vapid-keys</code>. Se ja configurou, limpe o cache com <code>php artisan config:clear</code>.
+                    </div>
+                @endif
+
+                @if($subscriptionsTableExists && $subscriptionsCount === 0)
+                    <div class="alert alert-info">
+                        Nenhum dispositivo esta inscrito ainda. Clique em <strong>Ativar notificacoes</strong> neste navegador e permita as notificacoes para habilitar os envios.
                     </div>
                 @endif
 
