@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Post;
 use App\Models\Categoria;
 use App\Models\Tag;
+use App\Services\WebPushService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -77,6 +78,16 @@ class PostController extends Controller
             $post->tags()->sync($request->tags);
         }
 
+        if ($post->status === 'publicado') {
+            app(WebPushService::class)->sendToAll([
+                'title' => 'Novo post no Portal DevTech',
+                'body' => Str::limit($post->resumo ?: $post->titulo, 140),
+                'url' => route('post', $post->slug),
+                'icon' => asset('icons/icon-192.png'),
+                'badge' => asset('icons/badge-96.png'),
+            ]);
+        }
+
         return redirect()->route('admin.posts.index')
                          ->with('success', 'Post criado com sucesso!');
     }
@@ -137,10 +148,22 @@ class PostController extends Controller
             $data['imagem_thumbnail'] = $data['imagem'];
         }
 
+        $wasPublished = $post->status === 'publicado';
+
         $post->update($data);
         
         // Atualizar tags
         $post->tags()->sync($request->tags ?? []);
+
+        if (! $wasPublished && $post->status === 'publicado') {
+            app(WebPushService::class)->sendToAll([
+                'title' => 'Novo post no Portal DevTech',
+                'body' => Str::limit($post->resumo ?: $post->titulo, 140),
+                'url' => route('post', $post->slug),
+                'icon' => asset('icons/icon-192.png'),
+                'badge' => asset('icons/badge-96.png'),
+            ]);
+        }
 
         return redirect()->route('admin.posts.index')
                          ->with('success', 'Post atualizado com sucesso!');

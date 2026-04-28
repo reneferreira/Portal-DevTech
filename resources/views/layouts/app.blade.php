@@ -5,8 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#0d6efd">
+    <meta name="push-public-key-url" content="{{ route('push.public-key') }}">
+    <meta name="push-subscribe-url" content="{{ route('push.subscribe') }}">
+    <meta name="push-unsubscribe-url" content="{{ route('push.unsubscribe') }}">
 
     <title>@yield('title', 'Portal DevTech - Portal de Tecnologia')</title>
+
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <link rel="icon" href="{{ asset('icons/favicon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -234,6 +242,9 @@
                     </div>
                 @else
                     <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" data-pwa-enable>
+                            Ativar notificacoes
+                        </button>
                         <a href="{{ route('login') }}" class="btn btn-outline-primary rounded-pill">
                             <i class="bi bi-box-arrow-in-right"></i> 
                         </a>
@@ -300,6 +311,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ asset('js/pwa.js') }}"></script>
     <script>
         (() => {
             const form = document.querySelector('[data-search-form]');

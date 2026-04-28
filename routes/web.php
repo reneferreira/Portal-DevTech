@@ -13,6 +13,12 @@ use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\TagController;
 use App\Http\Controllers\Admin\CommentController;
 use App\Http\Controllers\Admin\ContatoController as AdminContatoController;
+use App\Http\Controllers\Admin\PushNotificationController as AdminPushNotificationController;
+use App\Http\Controllers\PushSubscriptionController;
+
+Route::get('/push/public-key', [PushSubscriptionController::class, 'publicKey'])->name('push.public-key');
+Route::post('/push/subscribe', [PushSubscriptionController::class, 'store'])->name('push.subscribe');
+Route::delete('/push/unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
 
 /*
 |--------------------------------------------------------------------------
@@ -92,6 +98,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin']
     Route::patch('/contatos/{contato}/marcar-lido', [App\Http\Controllers\Admin\ContatoController::class, 'marcarLido'])->name('contatos.marcar-lido');
     Route::patch('/contatos/{contato}/respondido', [App\Http\Controllers\Admin\ContatoController::class, 'marcarRespondido'])->name('contatos.respondido');
     Route::delete('/contatos/{contato}', [App\Http\Controllers\Admin\ContatoController::class, 'destroy'])->name('contatos.destroy');
+
+    Route::get('/notificacoes-push', [AdminPushNotificationController::class, 'index'])->name('push.index');
+    Route::post('/notificacoes-push', [AdminPushNotificationController::class, 'store'])->name('push.store');
 });
 
 require __DIR__.'/auth.php';

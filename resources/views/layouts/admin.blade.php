@@ -5,7 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#0d6efd">
+    <meta name="push-public-key-url" content="{{ route('push.public-key') }}">
+    <meta name="push-subscribe-url" content="{{ route('push.subscribe') }}">
+    <meta name="push-unsubscribe-url" content="{{ route('push.unsubscribe') }}">
     <title>Admin - @yield('title', 'Dashboard') | TechNews</title>
+    
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
+    <link rel="icon" href="{{ asset('icons/favicon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
     
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -234,6 +242,14 @@
                         
                         <!-- Configurações (Opcional) -->
                         <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.push.*') ? 'active' : '' }}" 
+                               href="{{ route('admin.push.index') }}">
+                                <i class="bi bi-bell"></i>
+                                Notificacoes Push
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
                             <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#configMenu">
                                 <i class="bi bi-gear"></i>
                                 Configurações
@@ -286,6 +302,9 @@
                     <h1 class="h2">@yield('header')</h1>
                     <div class="btn-toolbar mb-2 mb-md-0">
                         <div class="dropdown">
+                            <button type="button" class="btn btn-sm btn-outline-primary me-2" data-pwa-enable>
+                                Ativar notificacoes
+                            </button>
                             <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-person-circle"></i> {{ auth()->user()->name }}
                             </button>
@@ -333,6 +352,7 @@
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-bs5.min.js"></script>
+    <script src="{{ asset('js/pwa.js') }}"></script>
     
     <script>
         // Inicializar DataTables
