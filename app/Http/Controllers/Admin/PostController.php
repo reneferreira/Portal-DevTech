@@ -43,10 +43,11 @@ class PostController extends Controller
         // Processar imagem
         $imagemPath = null;
         $thumbnailPath = null;
+        $mediaDisk = config('filesystems.media_disk', 'public');
         
         if ($request->hasFile('imagem')) {
             $imagem = $request->file('imagem');
-            $imagemPath = $imagem->store('posts', 'public');
+            $imagemPath = $imagem->store('posts', $mediaDisk);
             
             // Criar thumbnail (opcional)
             $thumbnailPath = $imagemPath;
@@ -113,6 +114,7 @@ class PostController extends Controller
         ]);
 
         // Atualizar dados
+        $mediaDisk = config('filesystems.media_disk', 'public');
         $data = [
             'titulo' => $request->titulo,
             'resumo' => $request->resumo,
@@ -139,12 +141,12 @@ class PostController extends Controller
         // Processar nova imagem
         if ($request->hasFile('imagem')) {
             // Deletar imagem antiga
-            if ($post->imagem && Storage::disk('public')->exists($post->imagem)) {
-                Storage::disk('public')->delete($post->imagem);
+            if ($post->imagem && Storage::disk($mediaDisk)->exists($post->imagem)) {
+                Storage::disk($mediaDisk)->delete($post->imagem);
             }
             
             $imagem = $request->file('imagem');
-            $data['imagem'] = $imagem->store('posts', 'public');
+            $data['imagem'] = $imagem->store('posts', $mediaDisk);
             $data['imagem_thumbnail'] = $data['imagem'];
         }
 
@@ -172,8 +174,10 @@ class PostController extends Controller
     public function destroy(Post $post)
     {
         // Deletar imagem
-        if ($post->imagem && Storage::disk('public')->exists($post->imagem)) {
-            Storage::disk('public')->delete($post->imagem);
+        $mediaDisk = config('filesystems.media_disk', 'public');
+
+        if ($post->imagem && Storage::disk($mediaDisk)->exists($post->imagem)) {
+            Storage::disk($mediaDisk)->delete($post->imagem);
         }
         
         $post->delete();

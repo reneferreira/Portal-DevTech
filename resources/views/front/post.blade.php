@@ -17,19 +17,10 @@
             <div class="col-lg-8">
                 <!-- Post Principal -->
                 <article class="card border-0 shadow-sm mb-4">
-                {{-- CORREÇÃO: Usar Storage::url() para gerar URL correta --}}
-
-                    @if($post->imagem)
-                        <img src="{{ Storage::url($post->imagem) }}" 
-                            class="card-img-top" 
-                            alt="{{ $post->titulo }}" 
-                            style="max-height: 500px; object-fit: cover;">
-                    @else
-                        <img src="{{ asset('images/default-post.jpg') }}" 
-                            class="card-img-top" 
-                            alt="Imagem padrão" 
-                            style="max-height: 500px; object-fit: cover;">
-                    @endif
+                    <img src="{{ ImageHelper::getImageUrl($post->imagem) }}" 
+                        class="card-img-top" 
+                        alt="{{ $post->titulo }}" 
+                        style="max-height: 500px; object-fit: cover;">
                     
                     <div class="card-body p-4">
                         <h1 class="display-5 fw-bold mb-3">{{ $post->titulo }}</h1>
@@ -245,7 +236,7 @@
                     <div class="card-body">
                         @foreach($relacionados as $relacionado)
                             <div class="d-flex mb-3">
-                                <img src="{{ asset("storage/" . $relacionado->imagem_thumbnail) ?? 'https://via.placeholder.com/80x80/0d6efd/ffffff?text=Post' }}" 
+                                <img src="{{ ImageHelper::getThumbnailUrl($relacionado) }}" 
                                      class="rounded me-3" width="80" height="80" style="object-fit: cover;" alt="">
                                 <div>
                                     <h6>

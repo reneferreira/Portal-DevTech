@@ -74,7 +74,7 @@
                         <label class="form-label">Imagem Atual</label>
                         @if($post->imagem)
                             <div class="mb-2">
-                                <img src="{{ Storage::url($post->imagem) }}" 
+                                <img src="{{ ImageHelper::getImageUrl($post->imagem) }}" 
                                      class="img-fluid rounded" alt="{{ $post->titulo }}">
                             </div>
                         @else

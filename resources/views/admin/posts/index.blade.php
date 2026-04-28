@@ -36,7 +36,7 @@
                         <td>
                             <strong>{{ Str::limit($post->titulo, 50) }}</strong>
                               @if($post->imagem)
-                                    <img src="{{ Storage::url($post->imagem) }}" 
+                                    <img src="{{ ImageHelper::getImageUrl($post->imagem) }}" 
                                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;" 
                                         alt="{{ $post->titulo }}">
                                 @else
