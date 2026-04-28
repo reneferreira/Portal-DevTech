@@ -18,6 +18,8 @@ class WebPushService
 
     public function send(Collection $subscriptions, array $payload): array
     {
+        $this->ensureOpenSslConfig();
+
         $sent = 0;
         $failed = 0;
         $errors = [];
@@ -99,5 +101,20 @@ class WebPushService
         $key = trim($key, " \t\n\r\0\x0B\"'");
 
         return preg_replace('/\s+/', '', $key) ?: null;
+    }
+
+    private function ensureOpenSslConfig(): void
+    {
+        if (getenv('OPENSSL_CONF')) {
+            return;
+        }
+
+        $configPath = base_path('config/openssl.cnf');
+
+        if (is_file($configPath)) {
+            putenv('OPENSSL_CONF=' . $configPath);
+            $_ENV['OPENSSL_CONF'] = $configPath;
+            $_SERVER['OPENSSL_CONF'] = $configPath;
+        }
     }
 }
