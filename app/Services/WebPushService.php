@@ -92,14 +92,14 @@ class WebPushService
             }
 
             $failed++;
-            $errors[] = $report->getReason();
+            $errors[] = $this->summarizeFailureReason($report->getReason());
 
             Log::warning('Push notification failed.', [
                 'endpoint' => $endpoint,
                 'reason' => $report->getReason(),
             ]);
 
-            if ($report->isSubscriptionExpired() || str_contains($report->getReason(), '404') || str_contains($report->getReason(), '410')) {
+            if ($this->shouldDeleteSubscription($report->getReason(), $report->isSubscriptionExpired())) {
                 $subscription?->delete();
             }
         }
@@ -120,6 +120,33 @@ class WebPushService
         $key = trim($key, " \t\n\r\0\x0B\"'");
 
         return preg_replace('/\s+/', '', $key) ?: null;
+    }
+
+    private function shouldDeleteSubscription(string $reason, bool $expired): bool
+    {
+        return $expired
+            || str_contains($reason, '404')
+            || str_contains($reason, '410')
+            || str_contains($reason, '401')
+            || str_contains($reason, '403')
+            || str_contains($reason, 'BadJwtToken');
+    }
+
+    private function summarizeFailureReason(string $reason): string
+    {
+        if (str_contains($reason, 'BadJwtToken')) {
+            return 'Inscricao invalida na Apple (BadJwtToken). Ative as notificacoes novamente nesse dispositivo.';
+        }
+
+        if (str_contains($reason, '403')) {
+            return 'Servico push recusou a inscricao (403). Ative as notificacoes novamente nesse dispositivo.';
+        }
+
+        if (str_contains($reason, '404') || str_contains($reason, '410')) {
+            return 'Inscricao expirada/removida pelo navegador.';
+        }
+
+        return $reason;
     }
 
     private function ensureOpenSslConfig(): void
