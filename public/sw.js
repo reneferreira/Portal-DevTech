@@ -1,4 +1,4 @@
-const CACHE_NAME = 'portal-devtech-v1';
+const CACHE_NAME = 'portal-devtech-v2';
 const OFFLINE_URLS = [
     '/',
     '/manifest.webmanifest',
@@ -9,7 +9,7 @@ const OFFLINE_URLS = [
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME)
-            .then((cache) => cache.addAll(OFFLINE_URLS))
+            .then((cache) => Promise.allSettled(OFFLINE_URLS.map((url) => cache.add(url))))
             .then(() => self.skipWaiting())
     );
 });

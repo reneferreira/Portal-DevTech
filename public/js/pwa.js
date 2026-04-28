@@ -6,6 +6,7 @@
     const publicKeyUrl = meta('push-public-key-url');
     const buttons = document.querySelectorAll('[data-pwa-enable]');
     let isSubscribing = false;
+    let serviceWorkerRegistration = null;
 
     if (!('serviceWorker' in navigator)) {
         buttons.forEach((button) => {
@@ -39,12 +40,27 @@
         body: JSON.stringify(payload)
     });
 
+    const withTimeout = (promise, milliseconds, message) => Promise.race([
+        promise,
+        new Promise((resolve) => {
+            setTimeout(() => resolve({ timedOut: true, message }), milliseconds);
+        })
+    ]);
+
     const saveSubscription = async (subscription) => {
         if (!subscribeUrl) {
             return false;
         }
 
-        const response = await postJson(subscribeUrl, 'POST', subscription.toJSON());
+        const response = await withTimeout(
+            postJson(subscribeUrl, 'POST', subscription.toJSON()),
+            10000,
+            'Sincronizacao demorou'
+        );
+
+        if (response.timedOut) {
+            return false;
+        }
 
         return response.ok;
     };
@@ -57,14 +73,14 @@
     };
 
     const register = async () => {
-        const registration = await navigator.serviceWorker.register('/sw.js');
+        serviceWorkerRegistration = await navigator.serviceWorker.register('/sw.js');
 
         if (!('PushManager' in window) || !('Notification' in window)) {
             updateButtons('Push indisponivel', true);
             return;
         }
 
-        const existingSubscription = await registration.pushManager.getSubscription();
+        const existingSubscription = await serviceWorkerRegistration.pushManager.getSubscription();
 
         if (existingSubscription) {
             const synced = await saveSubscription(existingSubscription);
@@ -90,15 +106,49 @@
             return;
         }
 
-        const permission = await Notification.requestPermission();
+        const permissionResult = await withTimeout(
+            Notification.requestPermission(),
+            15000,
+            'Tempo esgotado'
+        );
+
+        if (permissionResult.timedOut) {
+            updateButtons('Permissao pendente');
+            return;
+        }
+
+        const permission = permissionResult;
 
         if (permission !== 'granted') {
             updateButtons('Permissao nao ativada');
             return;
         }
 
-        const registration = await navigator.serviceWorker.ready;
-        const keyResponse = await fetch(publicKeyUrl, { headers: { Accept: 'application/json' } });
+        const readyResult = await withTimeout(
+            navigator.serviceWorker.ready,
+            10000,
+            'Service worker demorou'
+        );
+
+        const registration = readyResult.timedOut
+            ? serviceWorkerRegistration || await navigator.serviceWorker.register('/sw.js')
+            : readyResult;
+
+        if (!registration?.pushManager) {
+            updateButtons('Push indisponivel', true);
+            return;
+        }
+
+        const keyResponse = await withTimeout(
+            fetch(publicKeyUrl, { headers: { Accept: 'application/json' } }),
+            10000,
+            'Chave demorou'
+        );
+
+        if (keyResponse.timedOut) {
+            updateButtons('Chave demorou');
+            return;
+        }
 
         if (!keyResponse.ok) {
             updateButtons('Erro na chave push');
@@ -112,12 +162,21 @@
             return;
         }
 
-        const subscription = await registration.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(publicKey)
-        });
+        const subscriptionResult = await withTimeout(
+            registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(publicKey)
+            }),
+            15000,
+            'Inscricao demorou'
+        );
 
-        const synced = await saveSubscription(subscription);
+        if (subscriptionResult.timedOut) {
+            updateButtons('Inscricao demorou');
+            return;
+        }
+
+        const synced = await saveSubscription(subscriptionResult);
         updateButtons(synced ? 'Notificacoes ativas' : 'Sincronizar notificacoes');
     };
 
