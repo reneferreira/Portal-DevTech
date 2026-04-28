@@ -7,6 +7,7 @@
     const buttons = document.querySelectorAll('[data-pwa-enable]');
     let isSubscribing = false;
     let serviceWorkerRegistration = null;
+    const subscriptionRefreshKey = 'portal-devtech-push-public-key';
 
     if (!('serviceWorker' in navigator)) {
         buttons.forEach((button) => {
@@ -100,6 +101,12 @@
     };
 
     const usesCurrentPublicKey = (subscription, publicKey) => {
+        const lastPublicKey = window.localStorage.getItem(subscriptionRefreshKey);
+
+        if (lastPublicKey && publicKey && lastPublicKey !== publicKey) {
+            return false;
+        }
+
         const applicationServerKey = subscription.options?.applicationServerKey;
 
         if (!applicationServerKey || !publicKey) {
@@ -131,11 +138,16 @@
 
             if (!usesCurrentPublicKey(existingSubscription, publicKey)) {
                 await existingSubscription.unsubscribe();
+                window.localStorage.removeItem(subscriptionRefreshKey);
                 updateButtons('Ativar notificacoes');
                 return;
             }
 
             const synced = await saveSubscription(existingSubscription);
+            if (synced && publicKey) {
+                window.localStorage.setItem(subscriptionRefreshKey, publicKey);
+            }
+
             if (!isSubscribing) {
                 updateButtons(synced ? 'Notificacoes ativas' : 'Sincronizar notificacoes');
             }
@@ -213,6 +225,11 @@
         }
 
         const synced = await saveSubscription(subscriptionResult);
+
+        if (synced) {
+            window.localStorage.setItem(subscriptionRefreshKey, publicKey);
+        }
+
         updateButtons(synced ? 'Notificacoes ativas' : 'Sincronizar notificacoes');
     };
 

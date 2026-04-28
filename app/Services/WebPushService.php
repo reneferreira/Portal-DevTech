@@ -101,6 +101,7 @@ class WebPushService
 
             if ($this->shouldDeleteSubscription($report->getReason(), $report->isSubscriptionExpired())) {
                 $subscription?->delete();
+                PushSubscriptionModel::where('endpoint', $endpoint)->delete();
             }
         }
 
